@@ -32,7 +32,7 @@ public class Main {
                 }
             }
             caffeineLevel.passTime(interval);
-            System.out.printf("%s %.02f%n", time, caffeineLevel.amount);
+            caffeineLevel.printAmount(time);
         }
     }
 }
@@ -40,7 +40,7 @@ public class Main {
 class CaffeineLevel {
     final Duration halfLife = Duration.of(6, HOURS);
 
-    double amount;
+    private double amount;
 
     CaffeineLevel() {
         this.amount = 0;
@@ -51,14 +51,17 @@ class CaffeineLevel {
     }
 
     void consumeDrink(Drink drink) {
-        this.amount += drink.amountMg;
+        this.amount = drink.addAmount(amount);
+    }
+
+    public void printAmount(LocalTime time) {
+        System.out.printf("%s %.02f%n", time, amount);
     }
 }
 
-
 class Drink {
-    final int amountMg;
-    final LocalTime startTime;
+    private final int amountMg;
+    private final LocalTime startTime;
 
     @Override
     public String toString() {
@@ -85,5 +88,9 @@ class Drink {
 
     public boolean isTime(LocalTime time) {
         return startTime.equals(time);
+    }
+
+    public double addAmount(double amount) {
+        return amount + this.amountMg;
     }
 }

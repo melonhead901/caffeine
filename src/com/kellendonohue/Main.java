@@ -10,63 +10,59 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Drink[] drinks = new Drink[]{
-                new Drink(90, LocalTime.of(9, 0)),
-                new Drink(80, LocalTime.of(10, 0)),
-                new Drink(54, LocalTime.of(14, 0)),
-                new Drink(54, LocalTime.of(15, 0)),
+        Drink[] drinks = new Drink[] {
+            new Drink(90, LocalTime.of(9, 0)),
+            new Drink(80, LocalTime.of(10, 0)),
+            new Drink(54, LocalTime.of(14, 0)),
+            new Drink(54, LocalTime.of(15, 0)),
         };
-
-        LocalTime t = drinks[0].startTime;
-
-        Duration halfLife = Duration.of(6, HOURS);
 
         final LocalTime start = LocalTime.of(8, 0);
 
         Duration interval = Duration.ofMinutes(15);
         LocalTime time = start;
 
-        double caffeine = 0;
+        CaffeineLevel caffeineLevel = new CaffeineLevel();
 
         while (time.isAfter(LocalTime.MIDNIGHT)) {
             time = time.plus(interval);
             for (Drink d : drinks) {
-                if (time.equals(d.startTime)) {
-                    caffeine += d.amountMg;
+                if (d.isTime(time)) {
+                    caffeineLevel.consumeDrink(d);
                 }
             }
-            caffeine = caffeine * Math.pow(.5, 1.0/halfLife.dividedBy(interval));
-            System.out.printf("%s %.02f%n", time, caffeine);
+            caffeineLevel.passTime(interval);
+            System.out.printf("%s %.02f%n", time, caffeineLevel.amount);
         }
     }
 }
 
+class CaffeineLevel {
+    final Duration halfLife = Duration.of(6, HOURS);
+
+    double amount;
+
+    CaffeineLevel() {
+        this.amount = 0;
+    }
+
+    void passTime(Duration interval) {
+        amount = amount * Math.pow(.5, 1.0 / halfLife.dividedBy(interval));
+    }
+
+    void consumeDrink(Drink drink) {
+        this.amount += drink.amountMg;
+    }
+}
+
+
 class Drink {
-    int amountMg;
-    LocalTime startTime;
-
-    public int getAmountMg() {
-        return amountMg;
-    }
-
-    public void setAmountMg(int amountMg) {
-        this.amountMg = amountMg;
-    }
-
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
+    final int amountMg;
+    final LocalTime startTime;
 
     @Override
     public String toString() {
-        return "Drink{" +
-                "amountMg=" + amountMg +
-                ", startTime=" + startTime +
-                '}';
+        return "Drink{" + "amountMg=" + amountMg + ", startTime=" + startTime + '}';
     }
 
     @Override
@@ -74,8 +70,7 @@ class Drink {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Drink drink = (Drink) o;
-        return amountMg == drink.amountMg &&
-                startTime.equals(drink.startTime);
+        return amountMg == drink.amountMg && startTime.equals(drink.startTime);
     }
 
     @Override
@@ -86,5 +81,9 @@ class Drink {
     public Drink(int amountMg, LocalTime startTime) {
         this.amountMg = amountMg;
         this.startTime = startTime;
+    }
+
+    public boolean isTime(LocalTime time) {
+        return startTime.equals(time);
     }
 }
